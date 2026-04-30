@@ -14,11 +14,13 @@ namespace velcro.Controllers;
 public class BoardController : ControllerBase
 {
     private readonly IBoardService _boards;
+    private readonly IListService _lists;
     private readonly IHubContext<BoardHub> _hub;
 
-    public BoardController(IBoardService boards, IHubContext<BoardHub> hub)
+    public BoardController(IBoardService boards, IListService lists, IHubContext<BoardHub> hub)
     {
         _boards = boards;
+        _lists = lists;
         _hub = hub;
     }
 
@@ -28,6 +30,14 @@ public class BoardController : ControllerBase
     public async Task<IActionResult> GetByWorkspace(Guid workspaceId)
     {
         try { return Ok(await _boards.GetBoardsByWorkspaceAsync(workspaceId, UserId)); }
+        catch (UnauthorizedAccessException) { return Forbid(); }
+    }
+
+    [HttpGet("{id}/lists")]
+    public async Task<IActionResult> GetLists(Guid id)
+    {
+        try { return Ok(await _lists.GetListsByBoardAsync(id, UserId)); }
+        catch (KeyNotFoundException) { return NotFound(); }
         catch (UnauthorizedAccessException) { return Forbid(); }
     }
 

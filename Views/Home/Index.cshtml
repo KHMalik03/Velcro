@@ -1,8 +1,24 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@{
+    ViewData["Title"] = "Tableau de bord";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="mb-0" id="greeting">Bonjour !</h4>
+        <p class="text-muted mb-0 small">Vos workspaces et boards</p>
+    </div>
+    <button class="btn btn-primary" id="btn-new-workspace">+ Nouveau workspace</button>
 </div>
+
+<div id="dash-error" class="alert alert-danger d-none"></div>
+
+<div class="row" id="workspaces-container">
+    <div class="col-12 text-center text-muted py-5">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p class="mt-2">Chargement…</p>
+    </div>
+</div>
+
+@section Scripts {
+<script src="~/js/dashboard.js" asp-append-version="true"></script>
+}

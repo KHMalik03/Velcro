@@ -1,50 +1,62 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="fr">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - velcro</title>
-    <script type="importmap"></script>
+    <title>@ViewData["Title"] - Velcro</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/velcro.styles.css" asp-append-version="true" />
+    @if (ViewData["FullWidth"] != null)
+    {
+        <link rel="stylesheet" href="~/css/board.css" asp-append-version="true" />
+    }
 </head>
-<body>
+<body class="@(ViewData["FullWidth"] != null ? "board-body" : "")">
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">velcro</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
+        <nav class="navbar navbar-expand-sm navbar-dark bg-dark px-3">
+            <a class="navbar-brand fw-bold" href="/">&#9632; Velcro</a>
+            <div class="navbar-collapse collapse">
+                <ul class="navbar-nav flex-grow-1"></ul>
+                <div class="d-flex align-items-center gap-3" id="nav-user-section" style="display:none!important">
+                    <span class="text-white small" id="nav-username"></span>
+                    <button class="btn btn-outline-light btn-sm" id="btn-logout">Déconnexion</button>
                 </div>
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - velcro - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    @if (ViewData["FullWidth"] != null)
+    {
+        <div class="board-outer">
+            @RenderBody()
         </div>
-    </footer>
+    }
+    else
+    {
+        <div class="container mt-4">
+            <main role="main" class="pb-3">
+                @RenderBody()
+            </main>
+        </div>
+    }
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/api.js" asp-append-version="true"></script>
+    <script>
+        (function () {
+            const user = getUser();
+            if (user) {
+                const section = document.getElementById('nav-user-section');
+                section.style.removeProperty('display');
+                document.getElementById('nav-username').textContent = user.username;
+            }
+            document.getElementById('btn-logout')?.addEventListener('click', () => {
+                clearAuth();
+                window.location.href = '/account/login';
+            });
+        })();
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

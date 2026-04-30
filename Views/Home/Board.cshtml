@@ -1,0 +1,72 @@
+@{
+    ViewData["Title"] = "Board";
+    ViewData["FullWidth"] = true;
+}
+
+<div id="board-app" data-board-id="@ViewBag.BoardId">
+
+    <!-- Board header -->
+    <div class="board-header">
+        <a href="/" class="btn btn-sm btn-outline-light me-2">&#8592;</a>
+        <h5 id="board-name">Chargement…</h5>
+    </div>
+
+    <!-- Lists row -->
+    <div class="lists-row" id="lists-row">
+
+        <!-- Add list column (always last) -->
+        <div class="add-list-col" id="add-list-col">
+            <button class="btn-add-list" id="btn-add-list">+ Ajouter une liste</button>
+            <div class="add-list-form" id="add-list-form">
+                <input type="text" class="form-control form-control-sm mb-2" id="new-list-name" placeholder="Nom de la liste">
+                <div class="d-flex gap-2">
+                    <button class="btn btn-primary btn-sm" id="confirm-add-list">Ajouter</button>
+                    <button class="btn btn-sm" id="cancel-add-list">✕</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Card detail modal -->
+<div class="modal fade" id="cardDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <input type="hidden" id="modal-card-id">
+                <input class="form-control card-modal-title border-0 shadow-none ps-0 fw-bold fs-5"
+                       id="modal-card-title" placeholder="Titre de la carte">
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Description</label>
+                    <textarea class="form-control" id="modal-card-desc" rows="3" placeholder="Ajouter une description…"></textarea>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Échéance</label>
+                    <input type="date" class="form-control" id="modal-card-due" style="max-width:200px">
+                </div>
+                <hr>
+                <h6 class="fw-semibold mb-3">Commentaires</h6>
+                <div id="modal-comments-list" class="mb-3"></div>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="modal-new-comment" placeholder="Ajouter un commentaire…">
+                    <button class="btn btn-outline-secondary" id="btn-add-comment">Envoyer</button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-danger me-auto" id="btn-delete-card">Supprimer la carte</button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                <button class="btn btn-primary" id="btn-save-card">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"
+        integrity="sha512-7SRCYIJtR6F8ocwW7UxW6wGKqbSyqREDbfCORCum3potNt6nska71M9rJ7ERzMoU9yn8REN1gD7arePEsV5HA=="
+        crossorigin="anonymous"></script>
+<script src="~/js/board.js" asp-append-version="true"></script>
+}
