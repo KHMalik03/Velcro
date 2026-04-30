@@ -12,6 +12,27 @@ public class ListService : IListService
 
     public ListService(ApplicationDbContext db) => _db = db;
 
+    public async Task<List<ListWithCardsDto>> GetListsByBoardAsync(Guid boardId, Guid userId)
+    {
+        await EnsureBoardMemberAsync(boardId, userId);
+        var lists = await _db.Lists
+            .Where(l => l.BoardId == boardId && !l.IsArchived)
+            .OrderBy(l => l.Position)
+            .Include(l => l.Cards.Where(c => !c.IsArchived)).ThenInclude(c => c.Members).ThenInclude(m => m.User)
+            .Include(l => l.Cards.Where(c => !c.IsArchived)).ThenInclude(c => c.CardLabels).ThenInclude(cl => cl.Label)
+            .ToListAsync();
+
+        return lists.Select(l => new ListWithCardsDto(
+            l.Id, l.BoardId, l.Name, l.Position, l.IsArchived,
+            l.Cards.Where(c => !c.IsArchived).OrderBy(c => c.Position).Select(c => new CardSummaryDto(
+                c.Id, c.ListId, c.Title, c.Position, c.DueDate, c.IsArchived,
+                c.Members.Select(m => new CardMemberDto(m.UserId, m.User.Username, m.User.AvatarUrl)).ToList(),
+                c.CardLabels.Select(cl => new LabelDto(cl.LabelId, cl.Label.BoardId, cl.Label.Name, cl.Label.Color)).ToList()
+            )).ToList(),
+            l.CreatedAt, l.UpdatedAt
+        )).ToList();
+    }
+
     public async Task<ListDto> GetListAsync(Guid id, Guid userId)
     {
         var list = await _db.Lists.FindAsync(id)

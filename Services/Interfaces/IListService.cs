@@ -5,6 +5,7 @@ namespace velcro.Services.Interfaces;
 public interface IListService
 {
     Task<ListDto> GetListAsync(Guid id, Guid userId);
+    Task<List<ListWithCardsDto>> GetListsByBoardAsync(Guid boardId, Guid userId);
     Task<ListDto> CreateListAsync(CreateListRequest request, Guid userId);
     Task<ListDto> UpdateListAsync(Guid id, UpdateListRequest request, Guid userId);
     Task<Guid> DeleteListAsync(Guid id, Guid userId);
