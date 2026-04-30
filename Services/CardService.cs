@@ -57,13 +57,15 @@ public class CardService : ICardService
         return ToDetailDto(card);
     }
 
-    public async Task DeleteCardAsync(Guid id, Guid userId)
+    public async Task<Guid> DeleteCardAsync(Guid id, Guid userId)
     {
-        var card = await _db.Cards.FindAsync(id)
+        var card = await _db.Cards.Include(c => c.List).FirstOrDefaultAsync(c => c.Id == id)
             ?? throw new KeyNotFoundException("Carte introuvable.");
         await EnsureBoardMemberViaListAsync(card.ListId, userId);
+        var boardId = card.List.BoardId;
         _db.Cards.Remove(card);
         await _db.SaveChangesAsync();
+        return boardId;
     }
 
     public async Task<CardDetailDto> MoveCardAsync(Guid id, MoveCardRequest request, Guid userId)
@@ -72,13 +74,11 @@ public class CardService : ICardService
             ?? throw new KeyNotFoundException("Carte introuvable.");
         await EnsureBoardMemberViaListAsync(card.ListId, userId);
 
-        // Décaler les cartes de l'ancienne liste
         var oldListCards = await _db.Cards
             .Where(c => c.ListId == card.ListId && c.Id != id && c.Position > card.Position)
             .ToListAsync();
         foreach (var c in oldListCards) c.Position--;
 
-        // Décaler les cartes de la nouvelle liste pour faire de la place
         var newListCards = await _db.Cards
             .Where(c => c.ListId == request.TargetListId && c.Position >= request.NewPosition)
             .ToListAsync();
@@ -94,6 +94,7 @@ public class CardService : ICardService
 
     private async Task<Card> LoadCardAsync(Guid id) =>
         await _db.Cards
+            .Include(c => c.List)
             .Include(c => c.Members).ThenInclude(m => m.User)
             .Include(c => c.CardLabels).ThenInclude(cl => cl.Label)
             .Include(c => c.Comments).ThenInclude(co => co.Author)
@@ -115,10 +116,10 @@ public class CardService : ICardService
     }
 
     private static CardDetailDto ToDetailDto(Card c) => new(
-        c.Id, c.ListId, c.Title, c.Description, c.Position, c.DueDate, c.IsArchived, c.CreatedById,
+        c.Id, c.ListId, c.List.BoardId, c.Title, c.Description, c.Position, c.DueDate, c.IsArchived, c.CreatedById,
         c.Members.Select(m => new CardMemberDto(m.UserId, m.User.Username, m.User.AvatarUrl)).ToList(),
         c.CardLabels.Select(cl => new LabelDto(cl.LabelId, cl.Label.BoardId, cl.Label.Name, cl.Label.Color)).ToList(),
-        c.Comments.OrderBy(co => co.CreatedAt).Select(co => new CommentDto(co.Id, co.CardId, co.AuthorId, co.Author.Username, co.Content, co.CreatedAt, co.UpdatedAt)).ToList(),
+        c.Comments.OrderBy(co => co.CreatedAt).Select(co => new CommentDto(co.Id, co.CardId, co.AuthorId, co.Author.Username, co.Content, co.CreatedAt, co.UpdatedAt, c.List.BoardId)).ToList(),
         c.Checklists.Select(ch => new ChecklistDto(ch.Id, ch.CardId, ch.Title, ch.Items.OrderBy(i => i.Position).Select(i => new ChecklistItemDto(i.Id, i.ChecklistId, i.Title, i.IsCompleted, i.Position)).ToList())).ToList(),
         c.CreatedAt, c.UpdatedAt);
 }

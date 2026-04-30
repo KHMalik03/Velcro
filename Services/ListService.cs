@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using velcro.Data;
 using velcro.Models.DTOs;
-using velcro.Models.Entities;
 using velcro.Services.Interfaces;
 using EntityList = velcro.Models.Entities.List;
 
@@ -51,13 +50,15 @@ public class ListService : IListService
         return ToDto(list);
     }
 
-    public async Task DeleteListAsync(Guid id, Guid userId)
+    public async Task<Guid> DeleteListAsync(Guid id, Guid userId)
     {
         var list = await _db.Lists.FindAsync(id)
             ?? throw new KeyNotFoundException("Liste introuvable.");
         await EnsureBoardMemberAsync(list.BoardId, userId);
+        var boardId = list.BoardId;
         _db.Lists.Remove(list);
         await _db.SaveChangesAsync();
+        return boardId;
     }
 
     public async Task ReorderListsAsync(Guid boardId, ReorderListsRequest request, Guid userId)

@@ -1,6 +1,8 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using velcro.Hubs;
 using velcro.Models.DTOs;
 using velcro.Services.Interfaces;
 
@@ -12,8 +14,13 @@ namespace velcro.Controllers;
 public class BoardController : ControllerBase
 {
     private readonly IBoardService _boards;
+    private readonly IHubContext<BoardHub> _hub;
 
-    public BoardController(IBoardService boards) => _boards = boards;
+    public BoardController(IBoardService boards, IHubContext<BoardHub> hub)
+    {
+        _boards = boards;
+        _hub = hub;
+    }
 
     private Guid UserId => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
@@ -46,7 +53,12 @@ public class BoardController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateBoardRequest request)
     {
-        try { return Ok(await _boards.UpdateBoardAsync(id, request, UserId)); }
+        try
+        {
+            var result = await _boards.UpdateBoardAsync(id, request, UserId);
+            await _hub.Clients.Group($"board:{id}").SendAsync("BoardUpdated", result);
+            return Ok(result);
+        }
         catch (KeyNotFoundException) { return NotFound(); }
         catch (UnauthorizedAccessException) { return Forbid(); }
     }
@@ -54,7 +66,12 @@ public class BoardController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        try { await _boards.DeleteBoardAsync(id, UserId); return NoContent(); }
+        try
+        {
+            await _hub.Clients.Group($"board:{id}").SendAsync("BoardDeleted", id);
+            await _boards.DeleteBoardAsync(id, UserId);
+            return NoContent();
+        }
         catch (KeyNotFoundException) { return NotFound(); }
         catch (UnauthorizedAccessException) { return Forbid(); }
     }
