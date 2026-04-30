@@ -52,6 +52,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IWorkspaceService, WorkspaceService>();
 builder.Services.AddScoped<IBoardService, BoardService>();
+builder.Services.AddScoped<IListService, ListService>();
+builder.Services.AddScoped<ICardService, CardService>();
+builder.Services.AddScoped<ICommentService, CommentService>();
 
 // SignalR
 builder.Services.AddSignalR();
