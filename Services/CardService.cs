@@ -1,0 +1,124 @@
+using Microsoft.EntityFrameworkCore;
+using velcro.Data;
+using velcro.Models.DTOs;
+using velcro.Models.Entities;
+using velcro.Services.Interfaces;
+
+namespace velcro.Services;
+
+public class CardService : ICardService
+{
+    private readonly ApplicationDbContext _db;
+
+    public CardService(ApplicationDbContext db) => _db = db;
+
+    public async Task<CardDetailDto> GetCardAsync(Guid id, Guid userId)
+    {
+        var card = await LoadCardAsync(id);
+        await EnsureBoardMemberViaListAsync(card.ListId, userId);
+        return ToDetailDto(card);
+    }
+
+    public async Task<CardDetailDto> CreateCardAsync(CreateCardRequest request, Guid userId)
+    {
+        var list = await _db.Lists.FindAsync(request.ListId)
+            ?? throw new KeyNotFoundException("Liste introuvable.");
+        await EnsureBoardMemberAsync(list.BoardId, userId);
+
+        var position = await _db.Cards.CountAsync(c => c.ListId == request.ListId && !c.IsArchived);
+        var card = new Card
+        {
+            Id = Guid.NewGuid(),
+            ListId = request.ListId,
+            Title = request.Title,
+            Description = request.Description,
+            DueDate = request.DueDate,
+            Position = position,
+            CreatedById = userId,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+        _db.Cards.Add(card);
+        await _db.SaveChangesAsync();
+        return ToDetailDto(await LoadCardAsync(card.Id));
+    }
+
+    public async Task<CardDetailDto> UpdateCardAsync(Guid id, UpdateCardRequest request, Guid userId)
+    {
+        var card = await LoadCardAsync(id);
+        await EnsureBoardMemberViaListAsync(card.ListId, userId);
+
+        if (request.Title != null) card.Title = request.Title;
+        if (request.Description != null) card.Description = request.Description;
+        if (request.DueDate.HasValue) card.DueDate = request.DueDate;
+        if (request.IsArchived.HasValue) card.IsArchived = request.IsArchived.Value;
+        card.UpdatedAt = DateTime.UtcNow;
+        await _db.SaveChangesAsync();
+        return ToDetailDto(card);
+    }
+
+    public async Task DeleteCardAsync(Guid id, Guid userId)
+    {
+        var card = await _db.Cards.FindAsync(id)
+            ?? throw new KeyNotFoundException("Carte introuvable.");
+        await EnsureBoardMemberViaListAsync(card.ListId, userId);
+        _db.Cards.Remove(card);
+        await _db.SaveChangesAsync();
+    }
+
+    public async Task<CardDetailDto> MoveCardAsync(Guid id, MoveCardRequest request, Guid userId)
+    {
+        var card = await _db.Cards.FindAsync(id)
+            ?? throw new KeyNotFoundException("Carte introuvable.");
+        await EnsureBoardMemberViaListAsync(card.ListId, userId);
+
+        // Décaler les cartes de l'ancienne liste
+        var oldListCards = await _db.Cards
+            .Where(c => c.ListId == card.ListId && c.Id != id && c.Position > card.Position)
+            .ToListAsync();
+        foreach (var c in oldListCards) c.Position--;
+
+        // Décaler les cartes de la nouvelle liste pour faire de la place
+        var newListCards = await _db.Cards
+            .Where(c => c.ListId == request.TargetListId && c.Position >= request.NewPosition)
+            .ToListAsync();
+        foreach (var c in newListCards) c.Position++;
+
+        card.ListId = request.TargetListId;
+        card.Position = request.NewPosition;
+        card.UpdatedAt = DateTime.UtcNow;
+        await _db.SaveChangesAsync();
+
+        return ToDetailDto(await LoadCardAsync(id));
+    }
+
+    private async Task<Card> LoadCardAsync(Guid id) =>
+        await _db.Cards
+            .Include(c => c.Members).ThenInclude(m => m.User)
+            .Include(c => c.CardLabels).ThenInclude(cl => cl.Label)
+            .Include(c => c.Comments).ThenInclude(co => co.Author)
+            .Include(c => c.Checklists).ThenInclude(ch => ch.Items)
+            .FirstOrDefaultAsync(c => c.Id == id)
+        ?? throw new KeyNotFoundException("Carte introuvable.");
+
+    private async Task EnsureBoardMemberViaListAsync(Guid listId, Guid userId)
+    {
+        var list = await _db.Lists.FindAsync(listId)
+            ?? throw new KeyNotFoundException("Liste introuvable.");
+        await EnsureBoardMemberAsync(list.BoardId, userId);
+    }
+
+    private async Task EnsureBoardMemberAsync(Guid boardId, Guid userId)
+    {
+        if (!await _db.BoardMembers.AnyAsync(bm => bm.BoardId == boardId && bm.UserId == userId))
+            throw new UnauthorizedAccessException("Accès refusé.");
+    }
+
+    private static CardDetailDto ToDetailDto(Card c) => new(
+        c.Id, c.ListId, c.Title, c.Description, c.Position, c.DueDate, c.IsArchived, c.CreatedById,
+        c.Members.Select(m => new CardMemberDto(m.UserId, m.User.Username, m.User.AvatarUrl)).ToList(),
+        c.CardLabels.Select(cl => new LabelDto(cl.LabelId, cl.Label.BoardId, cl.Label.Name, cl.Label.Color)).ToList(),
+        c.Comments.OrderBy(co => co.CreatedAt).Select(co => new CommentDto(co.Id, co.CardId, co.AuthorId, co.Author.Username, co.Content, co.CreatedAt, co.UpdatedAt)).ToList(),
+        c.Checklists.Select(ch => new ChecklistDto(ch.Id, ch.CardId, ch.Title, ch.Items.OrderBy(i => i.Position).Select(i => new ChecklistItemDto(i.Id, i.ChecklistId, i.Title, i.IsCompleted, i.Position)).ToList())).ToList(),
+        c.CreatedAt, c.UpdatedAt);
+}
