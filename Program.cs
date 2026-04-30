@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using velcro.Data;
 using velcro.Hubs;
+using velcro.Services;
+using velcro.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,6 +47,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             }
         };
     });
+
+// Services
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 // SignalR
 builder.Services.AddSignalR();
