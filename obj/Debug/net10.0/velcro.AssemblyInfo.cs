@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("velcro")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+392f9bab8cc1400f5aef0199a250fcda86674203")]
 [assembly: System.Reflection.AssemblyProductAttribute("velcro")]
 [assembly: System.Reflection.AssemblyTitleAttribute("velcro")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

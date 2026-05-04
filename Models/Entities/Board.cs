@@ -14,5 +14,4 @@ public class Board
     public Workspace Workspace { get; set; } = null!;
     public ICollection<BoardMember> Members { get; set; } = [];
     public ICollection<List> Lists { get; set; } = [];
-    public ICollection<Label> Labels { get; set; } = [];
 }

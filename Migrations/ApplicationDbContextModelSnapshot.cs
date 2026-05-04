@@ -119,85 +119,6 @@ namespace velcro.Migrations
                     b.ToTable("Cards");
                 });
 
-            modelBuilder.Entity("velcro.Models.Entities.CardLabel", b =>
-                {
-                    b.Property<Guid>("CardId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("LabelId")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("CardId", "LabelId");
-
-                    b.HasIndex("LabelId");
-
-                    b.ToTable("CardLabels");
-                });
-
-            modelBuilder.Entity("velcro.Models.Entities.CardMember", b =>
-                {
-                    b.Property<Guid>("CardId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("CardId", "UserId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("CardMembers");
-                });
-
-            modelBuilder.Entity("velcro.Models.Entities.Checklist", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("CardId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CardId");
-
-                    b.ToTable("Checklists");
-                });
-
-            modelBuilder.Entity("velcro.Models.Entities.ChecklistItem", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("ChecklistId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsCompleted")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("Position")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ChecklistId");
-
-                    b.ToTable("ChecklistItems");
-                });
-
             modelBuilder.Entity("velcro.Models.Entities.Comment", b =>
                 {
                     b.Property<Guid>("Id")
@@ -227,32 +148,6 @@ namespace velcro.Migrations
                     b.HasIndex("CardId");
 
                     b.ToTable("Comments");
-                });
-
-            modelBuilder.Entity("velcro.Models.Entities.Label", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("BoardId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Color")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT")
-                        .HasDefaultValue("#61BD4F");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BoardId");
-
-                    b.ToTable("Labels");
                 });
 
             modelBuilder.Entity("velcro.Models.Entities.List", b =>
@@ -323,9 +218,6 @@ namespace velcro.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("AvatarUrl")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
@@ -456,66 +348,6 @@ namespace velcro.Migrations
                     b.Navigation("List");
                 });
 
-            modelBuilder.Entity("velcro.Models.Entities.CardLabel", b =>
-                {
-                    b.HasOne("velcro.Models.Entities.Card", "Card")
-                        .WithMany("CardLabels")
-                        .HasForeignKey("CardId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("velcro.Models.Entities.Label", "Label")
-                        .WithMany("CardLabels")
-                        .HasForeignKey("LabelId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Card");
-
-                    b.Navigation("Label");
-                });
-
-            modelBuilder.Entity("velcro.Models.Entities.CardMember", b =>
-                {
-                    b.HasOne("velcro.Models.Entities.Card", "Card")
-                        .WithMany("Members")
-                        .HasForeignKey("CardId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("velcro.Models.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Card");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("velcro.Models.Entities.Checklist", b =>
-                {
-                    b.HasOne("velcro.Models.Entities.Card", "Card")
-                        .WithMany("Checklists")
-                        .HasForeignKey("CardId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Card");
-                });
-
-            modelBuilder.Entity("velcro.Models.Entities.ChecklistItem", b =>
-                {
-                    b.HasOne("velcro.Models.Entities.Checklist", "Checklist")
-                        .WithMany("Items")
-                        .HasForeignKey("ChecklistId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Checklist");
-                });
-
             modelBuilder.Entity("velcro.Models.Entities.Comment", b =>
                 {
                     b.HasOne("velcro.Models.Entities.User", "Author")
@@ -533,17 +365,6 @@ namespace velcro.Migrations
                     b.Navigation("Author");
 
                     b.Navigation("Card");
-                });
-
-            modelBuilder.Entity("velcro.Models.Entities.Label", b =>
-                {
-                    b.HasOne("velcro.Models.Entities.Board", "Board")
-                        .WithMany("Labels")
-                        .HasForeignKey("BoardId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Board");
                 });
 
             modelBuilder.Entity("velcro.Models.Entities.List", b =>
@@ -600,8 +421,6 @@ namespace velcro.Migrations
 
             modelBuilder.Entity("velcro.Models.Entities.Board", b =>
                 {
-                    b.Navigation("Labels");
-
                     b.Navigation("Lists");
 
                     b.Navigation("Members");
@@ -609,23 +428,7 @@ namespace velcro.Migrations
 
             modelBuilder.Entity("velcro.Models.Entities.Card", b =>
                 {
-                    b.Navigation("CardLabels");
-
-                    b.Navigation("Checklists");
-
                     b.Navigation("Comments");
-
-                    b.Navigation("Members");
-                });
-
-            modelBuilder.Entity("velcro.Models.Entities.Checklist", b =>
-                {
-                    b.Navigation("Items");
-                });
-
-            modelBuilder.Entity("velcro.Models.Entities.Label", b =>
-                {
-                    b.Navigation("CardLabels");
                 });
 
             modelBuilder.Entity("velcro.Models.Entities.List", b =>

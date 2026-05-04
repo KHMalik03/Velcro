@@ -135,5 +135,5 @@ public class AuthService : IAuthService
     }
 
     private static UserDto ToUserDto(User user) =>
-        new(user.Id, user.Username, user.Email, user.AvatarUrl);
+        new(user.Id, user.Username, user.Email);
 }

@@ -100,6 +100,6 @@ public class BoardService : IBoardService
 
     private static BoardDto ToDto(Board b) =>
         new(b.Id, b.WorkspaceId, b.Name, b.Description, b.BackgroundColor, b.IsArchived,
-            b.Members.Select(m => new BoardMemberDto(m.UserId, m.User.Username, m.User.AvatarUrl, m.Role.ToString())).ToList(),
+            b.Members.Select(m => new BoardMemberDto(m.UserId, m.User.Username, m.Role.ToString())).ToList(),
             b.CreatedAt, b.UpdatedAt);
 }
