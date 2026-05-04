@@ -15,8 +15,5 @@ public class Card
 
     public List List { get; set; } = null!;
     public User CreatedBy { get; set; } = null!;
-    public ICollection<CardMember> Members { get; set; } = [];
-    public ICollection<CardLabel> CardLabels { get; set; } = [];
     public ICollection<Comment> Comments { get; set; } = [];
-    public ICollection<Checklist> Checklists { get; set; } = [];
 }

@@ -16,12 +16,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<BoardMember> BoardMembers { get; set; }
     public DbSet<EntityList> Lists { get; set; }
     public DbSet<Card> Cards { get; set; }
-    public DbSet<Label> Labels { get; set; }
-    public DbSet<CardLabel> CardLabels { get; set; }
-    public DbSet<CardMember> CardMembers { get; set; }
     public DbSet<Comment> Comments { get; set; }
-    public DbSet<Checklist> Checklists { get; set; }
-    public DbSet<ChecklistItem> ChecklistItems { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -103,37 +98,6 @@ public class ApplicationDbContext : DbContext
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
-        modelBuilder.Entity<Label>(e =>
-        {
-            e.HasKey(l => l.Id);
-            e.Property(l => l.Color).HasDefaultValue("#61BD4F");
-            e.HasOne(l => l.Board)
-                .WithMany(b => b.Labels)
-                .HasForeignKey(l => l.BoardId);
-        });
-
-        modelBuilder.Entity<CardLabel>(e =>
-        {
-            e.HasKey(cl => new { cl.CardId, cl.LabelId });
-            e.HasOne(cl => cl.Card)
-                .WithMany(c => c.CardLabels)
-                .HasForeignKey(cl => cl.CardId);
-            e.HasOne(cl => cl.Label)
-                .WithMany(l => l.CardLabels)
-                .HasForeignKey(cl => cl.LabelId);
-        });
-
-        modelBuilder.Entity<CardMember>(e =>
-        {
-            e.HasKey(cm => new { cm.CardId, cm.UserId });
-            e.HasOne(cm => cm.Card)
-                .WithMany(c => c.Members)
-                .HasForeignKey(cm => cm.CardId);
-            e.HasOne(cm => cm.User)
-                .WithMany()
-                .HasForeignKey(cm => cm.UserId);
-        });
-
         modelBuilder.Entity<Comment>(e =>
         {
             e.HasKey(c => c.Id);
@@ -144,22 +108,6 @@ public class ApplicationDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(c => c.AuthorId)
                 .OnDelete(DeleteBehavior.Restrict);
-        });
-
-        modelBuilder.Entity<Checklist>(e =>
-        {
-            e.HasKey(c => c.Id);
-            e.HasOne(c => c.Card)
-                .WithMany(c => c.Checklists)
-                .HasForeignKey(c => c.CardId);
-        });
-
-        modelBuilder.Entity<ChecklistItem>(e =>
-        {
-            e.HasKey(ci => ci.Id);
-            e.HasOne(ci => ci.Checklist)
-                .WithMany(c => c.Items)
-                .HasForeignKey(ci => ci.ChecklistId);
         });
     }
 }
