@@ -9,8 +9,8 @@ public class RefreshToken
     public bool IsRevoked { get; set; }
     public DateTime CreatedAt { get; set; }
 
-    public bool IsExpired => DateTime.UtcNow >= ExpiresAt;
-    public bool IsActive => !IsRevoked && !IsExpired;
+    public bool IsExpired => DateTime.UtcNow >= ExpiresAt;      // propriété calculée : pas stockée en base
+    public bool IsActive  => !IsRevoked && !IsExpired;          // valide seulement si non révoqué ET non expiré
 
     public User User { get; set; } = null!;
 }
